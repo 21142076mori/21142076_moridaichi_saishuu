@@ -1,0 +1,113 @@
+#include <iostream>
+#include <vector>
+#include <ctime>
+#include <cstdlib>
+ 
+using namespace std;
+ 
+// カードのデッキを作成
+vector<int> createDeck() {
+    vector<int> deck;
+    for (int i = 1; i <= 20; ++i) {
+        for (int j = 0; j < 4; ++j) {
+            deck.push_back(i);
+        }
+    }
+    return deck;
+}
+ 
+// カードのランダムなインデックスを取得
+int getRandomCardIndex(int maxIndex) {
+    return rand() % maxIndex;
+}
+ 
+// カードを引く
+int drawCard(vector<int>& deck) {
+    int maxIndex = deck.size();
+    int index = getRandomCardIndex(maxIndex);
+    int cardValue = deck[index];
+    deck.erase(deck.begin() + index);
+    return cardValue;
+}
+ 
+// カードの合計値を計算
+int getHandTotal(const vector<int>& hand) {
+    int total = 0;
+    bool hasAce = false;
+ 
+    for (int card : hand) {
+        if (card == 1) {
+            hasAce = true;
+        }
+        total += card;
+    }
+ 
+    if (hasAce && total + 20 <= 100) {
+        total += 20;
+    }
+ 
+    return total;
+}
+ 
+int main() {
+    srand(static_cast<unsigned>(time(0))); // ランダムなシードを設定
+ 
+    vector<int> deck = createDeck();
+    vector<int> playerHand;
+    vector<int> dealerHand;
+ 
+    // 初期手札を配布
+    playerHand.push_back(drawCard(deck));
+    playerHand.push_back(drawCard(deck));
+    dealerHand.push_back(drawCard(deck));
+    dealerHand.push_back(drawCard(deck));
+ 
+    while (true) {
+        cout << "あなたの手札: ";
+        for (int card : playerHand) {
+            cout << card << " ";
+        }
+       cout << " (合計: " << getHandTotal(playerHand) << ")" << endl;
+ 
+        // プレイヤーが100を超えた場合
+        if (getHandTotal(playerHand) > 100) {
+            cout << "バスト！あなたの負けです。" << endl;
+            break;
+        }
+ 
+        char choice;
+        cout << "カードを引きますか？ (y/n): ";
+        cin >> choice;
+ 
+        if (choice == 'y') {
+            playerHand.push_back(drawCard(deck));
+        }
+        else {
+            // ディーラーが85以上になるまでカードを引く
+            while (getHandTotal(dealerHand) < 85) {
+               dealerHand.push_back(drawCard(deck));
+            }
+ 
+            cout << "ディーラーの手札: ";
+            for (int card : dealerHand) {
+                cout << card << " ";
+            }
+            cout << " (合計: " << getHandTotal(dealerHand) << ")" << endl;
+ 
+            // 勝敗判定
+            int playerTotal = getHandTotal(playerHand);
+            int dealerTotal = getHandTotal(dealerHand);
+ 
+            if (dealerTotal > 100 || (playerTotal <= 100 && playerTotal > dealerTotal)) {
+                cout << "おめでとう！あなたの勝ちです。" << endl;
+            }
+            else {
+                cout << "残念！あなたの負けです。" << endl;
+            }
+ 
+            break;
+        }
+    }
+ 
+    return 0;
+}
